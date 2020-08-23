@@ -1,0 +1,40 @@
+<resources>
+    <!--  Overall  -->
+    <string name="app_name">WeightTracker</string>
+    <string name="title_activity_logbook">Logbook</string>
+    <string name="app_title">Weight Tracker</string>
+
+    <!--  Login  -->
+    <string name="username">Username: </string>
+    <string name="password">Password: </string>
+    <string name="user_hint">username</string>
+    <string name="pass_hint">password</string>
+    <string name="loginOrCreate">Login Or Create Account</string>
+
+    <!--  Logbook  -->
+    <string name="table_date">Date</string>
+    <string name="table_weight">Weight</string>
+    <string name="plus_minus">+/-</string>
+
+    <!--  Log Weight  -->
+    <string name="log_weight">Log Weight</string>
+    <string name="weight_number">Weight: </string>
+    <string name="date_number">Date: </string>
+    <string name="weight_hint">200.0</string>
+    <string name="date_hint">1/1/2020</string>
+    <string name="add_weight">Log Weight</string>
+
+    <!--  Profile  -->
+    <string name="sms">Enable Push Notifications:</string>
+    <string name="off">OFF</string>
+    <string name="on">ON</string>
+    <string name="target_weight_number">Target Weight: </string>
+
+    <!--  Bottom Navigation Bar  -->
+    <string name="logbook">Logbook</string>
+    <string name="submit">Add Weight</string>
+    <string name="profile">Profile</string>
+    <string name="title_logbook">Logbook</string>
+    <string name="title_add_weight">Log Weight</string>
+    <string name="title_notifications">Notifications</string>
+</resources>
