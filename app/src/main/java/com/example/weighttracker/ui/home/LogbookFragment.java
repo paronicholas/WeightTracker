@@ -15,6 +15,7 @@ import com.example.weighttracker.Logbook;
 import com.example.weighttracker.R;
 import com.example.weighttracker.database.helper.WeightTrackerDatabase;
 import com.example.weighttracker.database.model.DailyWeight;
+import com.example.weighttracker.database.model.TargetWeight;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,21 +38,14 @@ public class LogbookFragment extends Fragment {
     }
 
     private void showWeightTable() {
-        List<DailyWeight> dailyWeights = db.getDailyWeights();
-        List<DailyWeight> dailyWeightsForAccount = new ArrayList<>();
+        List<DailyWeight> dailyWeightsForAccount = db.getDailyWeightByAccountId(accountId);
 
-        for (DailyWeight dailyWeight : dailyWeights) {
-            if (dailyWeight.getAccountId() == accountId) {
-                dailyWeightsForAccount.add(dailyWeight);
-            }
-        }
         for (int i = dailyWeightsForAccount.size() - 1; i >= 0; i--) {
             createNewTableRow(dailyWeightsForAccount.get(i));
         }
     }
 
     private void createNewTableRow(DailyWeight dailyWeight) {
-        System.out.println(dailyWeight.getDate());
         TableRow tableRow = new TableRow(this.getContext());
         tableRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
         tableRow.addView(createTextView(dailyWeight.getDate()));

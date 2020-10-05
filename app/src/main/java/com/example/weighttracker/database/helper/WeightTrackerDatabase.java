@@ -16,7 +16,7 @@ import java.util.List;
 
 public class WeightTrackerDatabase extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "weight_tracker.db";
-    private static final int VERSION = 5;
+    private static final int VERSION = 9;
 
     private static final String LOG = WeightTrackerDatabase.class.getName();
 
@@ -39,25 +39,22 @@ public class WeightTrackerDatabase extends SQLiteOpenHelper {
     // Daily weight column names:
     private static final String KEY_DATE = "date";
     private static final String KEY_DAILY_WEIGHT = "daily_weight";
-    private static final String KEY_PLUS_MINUS = "plus_minus";
 
     // Target weight column names:
     private static final String KEY_TARGET_WEIGHT = "target_weight";
 
     // Linking table column names:
     private static final String KEY_ACCOUNT_ID = "account_id";
-    private static final String KEY_DAILY_ID = "daily_weight_id";
-    private static final String KEY_TARGET_ID = "target_weight_id";
 
     // Create table statements:
     private static final String CREATE_TABLE_ACCOUNTS = String.format(
-            "CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY, %s TEXT, %s TEXT);", TABLE_ACCOUNTS, KEY_ID, KEY_USERNAME, KEY_PASSWORD
+            "CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s TEXT);", TABLE_ACCOUNTS, KEY_ID, KEY_USERNAME, KEY_PASSWORD
     );
     private static final String CREATE_TABLE_DAILY_WEIGHTS = String.format(
-            "CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY, %s TEXT, %s TEXT, %s TEXT);", TABLE_DAILY_WEIGHTS, KEY_ID, KEY_DATE, KEY_DAILY_WEIGHT, KEY_ACCOUNT_ID
+            "CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s TEXT, %s INT);", TABLE_DAILY_WEIGHTS, KEY_ID, KEY_DATE, KEY_DAILY_WEIGHT, KEY_ACCOUNT_ID
     );
     private static final String CREATE_TABLE_TARGET_WEIGHTS = String.format(
-            "CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY, %s TEXT, %s TEXT);", TABLE_TARGET_WEIGHT, KEY_ID, KEY_TARGET_WEIGHT, KEY_ACCOUNT_ID
+            "CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s INT);", TABLE_TARGET_WEIGHT, KEY_ID, KEY_TARGET_WEIGHT, KEY_ACCOUNT_ID
     );
 
     @Override
@@ -121,6 +118,23 @@ public class WeightTrackerDatabase extends SQLiteOpenHelper {
         return accounts;
     }
 
+    public Account getAccountByUsername(String username) {
+        Account account = new Account();
+        String selectQuery = String.format("SELECT * FROM %S WHERE username = \"%s\";", TABLE_ACCOUNTS, username);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c.moveToFirst()) {
+            c.moveToFirst();
+            account.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+            account.setUsername(c.getString(c.getColumnIndex(KEY_USERNAME)));
+            account.setPassword(c.getString(c.getColumnIndex(KEY_PASSWORD)));
+        }
+
+        return account;
+    }
+
     /**
      * Daily Weight Table Methods
      */
@@ -149,13 +163,35 @@ public class WeightTrackerDatabase extends SQLiteOpenHelper {
         if (c.moveToFirst()) {
             do {
                 DailyWeight dailyWeight = new DailyWeight();
-
                 dailyWeight.setId(c.getInt(c.getColumnIndex(KEY_ID)));
                 dailyWeight.setDate(String.valueOf(c.getInt(c.getColumnIndex(KEY_DATE))));
                 dailyWeight.setDailyWeight(c.getInt(c.getColumnIndex(KEY_DAILY_WEIGHT)));
                 dailyWeight.setAccountId(c.getInt(c.getColumnIndex(KEY_ACCOUNT_ID)));
 
-                System.out.println("Date retrieved: " + dailyWeight.getDate());
+                dailyWeights.add(dailyWeight);
+            } while (c.moveToNext());
+        }
+
+        return dailyWeights;
+    }
+
+    public List<DailyWeight> getDailyWeightByAccountId(int accountId) {
+        List<DailyWeight> dailyWeights = new ArrayList<>();
+        String selectQuery = String.format("SELECT * FROM %S WHERE account_id = '%s';", TABLE_DAILY_WEIGHTS, accountId);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c.moveToFirst()) {
+            c.moveToFirst();
+
+            do {
+                DailyWeight dailyWeight = new DailyWeight();
+                dailyWeight.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                dailyWeight.setDailyWeight(c.getInt(c.getColumnIndex(KEY_DAILY_WEIGHT)));
+                dailyWeight.setDate(c.getString(c.getColumnIndex(KEY_DATE)));
+                dailyWeight.setAccountId(c.getInt(c.getColumnIndex(KEY_ACCOUNT_ID)));
+
                 dailyWeights.add(dailyWeight);
             } while (c.moveToNext());
         }
@@ -170,15 +206,8 @@ public class WeightTrackerDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
-        System.out.println("Create Target Weight with: \n" +
-                "Weight: " + targetWeight.getTargetWeight() + "\n" +
-                "Account: " + targetWeight.getAccountId());
         values.put(KEY_TARGET_WEIGHT, targetWeight.getTargetWeight());
         values.put(KEY_ACCOUNT_ID, targetWeight.getAccountId());
-
-        System.out.println("Values to be added: \n" +
-                "Weight: " + values.getAsString(KEY_TARGET_WEIGHT) + "\n" +
-                "Account: " + values.getAsString(KEY_ACCOUNT_ID));
 
         long accountId = db.insert(TABLE_TARGET_WEIGHT, null, values);
         return accountId;
@@ -205,6 +234,25 @@ public class WeightTrackerDatabase extends SQLiteOpenHelper {
         }
 
         return targetWeights;
+    }
+
+    public TargetWeight getTargetWeightByAccountId(int accountId) {
+        TargetWeight targetWeight = new TargetWeight();
+        String selectQuery = String.format("SELECT * FROM %s WHERE account_id = \"%s\";", TABLE_TARGET_WEIGHT, accountId);
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c.moveToFirst()) {
+            c.moveToFirst();
+            targetWeight.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+            targetWeight.setTargetWeight(c.getInt(c.getColumnIndex(KEY_TARGET_WEIGHT)));
+            targetWeight.setAccountId(c.getInt(c.getColumnIndex(KEY_ACCOUNT_ID)));
+        }
+
+        return targetWeight;
     }
 
     public int updateTargetWeight(TargetWeight targetWeight) {

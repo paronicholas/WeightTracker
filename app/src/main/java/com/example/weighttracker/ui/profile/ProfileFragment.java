@@ -44,30 +44,17 @@ public class ProfileFragment extends Fragment {
         public void onClick(View view) {
             boolean isUpdateTargetWeight = false;
             TargetWeight targetWeight = new TargetWeight();
-            System.out.println("The Log Target Weight button was clicked");
-            System.out.println("Current Account: " + accountId);
-            List<TargetWeight> targetWeights = db.getTargetWeights();
+            TargetWeight targetWeightFromDb = db.getTargetWeightByAccountId(accountId);
 
-            for (TargetWeight tg : targetWeights) {
-                System.out.println("target weight id: " + tg.getId());
-                System.out.println("target weight weight: " + tg.getTargetWeight());
-                System.out.println("target weight account: " + tg.getAccountId());
-                if (tg.getAccountId() == accountId) {
-                    isUpdateTargetWeight = true;
-                    targetWeight = tg;
-                    System.out.println("Current target weight: " + tg.getTargetWeight());
-                }
+            if (targetWeightFromDb.getTargetWeight() == accountId) {
+                isUpdateTargetWeight = true;
             }
 
-            System.out.println("isUpdateTargetWeight: " + isUpdateTargetWeight);
-
             targetWeight.setTargetWeight(Integer.parseInt(weight.getText().toString()));
-            System.out.println("new target weight: " + targetWeight.getTargetWeight());
             if (isUpdateTargetWeight) {
                 db.updateTargetWeight(targetWeight);
             } else {
                 targetWeight.setAccountId(accountId);
-                System.out.println("Account id for new target weight entry: " + targetWeight.getAccountId());
                 db.createTargetWeight(targetWeight);
             }
         }

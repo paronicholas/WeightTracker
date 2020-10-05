@@ -1,7 +1,5 @@
 package com.example.weighttracker;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -10,11 +8,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.weighttracker.database.helper.WeightTrackerDatabase;
 import com.example.weighttracker.database.model.Account;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     WeightTrackerDatabase db;
@@ -53,27 +50,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loginOrCreateAccount(View v) {
-        boolean newAccount = true;
-        List<Account> accounts = db.getAllAccounts();
+        String user = username.getText().toString();
+        String pass = password.getText().toString();
+
+        Account accountFromDB = db.getAccountByUsername(user);
         Account currentAccount = new Account();
 
-        for (Account account : accounts) {
-            if (account.getUsername().equals(username.getText().toString()) && account.getPassword().equals(password.getText().toString())) {
-                newAccount = false;
-                currentAccount = account;
+        if (user.equals(accountFromDB.getUsername()) && !pass.equals(accountFromDB.getPassword())) {
+            System.out.println("Wrong Credentials");
+        } else {
+            if (user.equals(accountFromDB.getUsername()) && pass.equals(accountFromDB.getPassword())) {
+                currentAccount.setId(accountFromDB.getId());
+                currentAccount.setUsername(accountFromDB.getUsername());
+                currentAccount.setPassword(accountFromDB.getPassword());
+            } else {
+                currentAccount.setUsername(user);
+                currentAccount.setPassword(pass);
+                db.createAccount(currentAccount);
             }
-        }
 
-        if (newAccount) {
-            currentAccount.setUsername(username.getText().toString());
-            currentAccount.setPassword(password.getText().toString());
-            db.createAccount(currentAccount);
+            Intent intent = new Intent(this, Logbook.class);
+            intent.putExtra("accountId", currentAccount.getId());
+            startActivity(intent);
         }
-
-        System.out.println("account id: " + currentAccount.getId());
-        Intent intent = new Intent(this, Logbook.class);
-        intent.putExtra("accountId", currentAccount.getId());
-        startActivity(intent);
     }
 
     private void setButtonState() {
